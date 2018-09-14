@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Person Page</title>
+</head>
+<body onload="{{ Msg }}">
+<button onclick="location.href='/monitor/index2'" type="button">监视界面</button>
+<button onclick="location.href='/monitor/logout'" type="button">登出</button>
+<button onclick="location.href='/monitor/chpswd'" type="button">更改密码</button>
+<button {{ hidden }} onclick="location.href='/monitor/super'" type="button">管理员界面</button>
+
+<div>
+<form action="/monitor/delete/face/" method="post">
+{% csrf_token %}
+<ul>
+    {% for facename in faces %}
+    <li>
+    <input type="checkbox" name="{{ facename }}">
+        {{ facename}}
+    </li>
+    {% endfor %}
+</ul>
+<input type="submit" value="删除选中人像">
+</form>
+</div>
+<div>
+    <table>
+        <tr>
+            <td>{{ range.xmin }}</td>
+            <td>{{ range.xmax }}</td>
+            <td>{{ range.ymin }}</td>
+            <td>{{ range.ymax }}</td>
+        </tr>
+    </table>
+    <form action="/monitor/chrange/" method="post">
+        {% csrf_token %}}
+        xmin:<input type="number" name="xmin" oninput="if(value>640)value=640;if(value<0)value=0;">
+        xmax:<input type="number" name="xmax" oninput="if(value>640)value=640;if(value<0)value=0;">
+        ymin:<input type="number" name="ymin" oninput="if(value>480)value=480;if(value<0)value=0;">
+        ymax:<input type="number" name="ymax" oninput="if(value>480)value=480;if(value<0)value=0;">
+        <input type="submit" value="submit">
+    </form>
+</div>
+<div>
+<form enctype="multipart/form-data" action="/monitor/upimg/" method="post">
+        {% csrf_token %}}
+        pic:<input type="file" name="img">
+        name:<input type="text" name="name">
+        <input type="submit" value="submit">
+</form>
+</div>
+<div>
+    <form action="/monitor/delete/record/" method="post">
+    <ul>
+        {% for record in recordlist %}
+            <li> <input style="display: inline;" type="checkbox" name="{{ record.id }}"><p style="display: inline;">{{ record.recordTime}} </p> <p style="display: inline;margin-left: 50px;">{{record.recordText}}</p></li>
+        {% endfor %}
+    </ul>
+    <input type="submit" value="submit">
+    </form>
+</div>
+</body>
+</html>

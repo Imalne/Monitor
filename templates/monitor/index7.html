@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body onload="f()">
+<a href="/monitor/logout">登出</a>
+<a href="/monitor/userpage">个人页面</a>
+<script>
+    var ttt;
+    var oldlen = 0;
+    var ctx = false;
+    var historydata = {};
+    var namecolors = {};
+    var usefulcolors = ['#666666','#FF0088','#FF0000','#FF8800','#FFFF00','#00FF00','#00FFCC','#00FFFF','#0066FF','#0000FF','#9900FF','#FF00FF'];
+    var notusedcolors = ['#666666','#FF0088','#FF0000','#FF8800','#FFFF00','#00FF00','#00FFCC','#00FFFF','#0066FF','#0000FF','#9900FF','#FF00FF'];
+    function f() {
+        if (ctx == false) {
+            ctx = getCTX();
+        }
+        xhr = new XMLHttpRequest();
+        xhr.multipart = true;
+        xhr.open('Post', "/monitor/recordInfo/");
+        let recordnode = document.getElementById('record');
+        let recordelement = '';
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 3) {
+                console.log(oldlen);
+                ans = xhr.responseText.substring(oldlen, );
+                let jsoned = JSON.parse(ans);
+                if (jsoned['info'] && jsoned['info'][jsoned['info'].length-1]!=':') {
+                    recordelement = document.createElement('li');
+                    recordelement.innerHTML = (new Date()).toLocaleString() + jsoned['info'];
+                    recordnode.insertBefore(recordelement, recordnode.childNodes[0]);
+                }
+                let nowdata = {};
+                ctx.clearRect(0,0,640,480);
+                for (k in jsoned['names']) {
+                    let thisname = jsoned['names'][k];
+                    if (thisname === 'unknown') {
+                        continue;
+                    }
+                    let locationinfo = jsoned['locations'][k];
+                    nowdata[thisname] = {'x': (locationinfo[1] + locationinfo[3]) / 2, 'y': (locationinfo[0] + locationinfo[2]) / 2}
+                    if (thisname in historydata) {
+                        historydata[thisname].push(nowdata[thisname]);
+                        while (historydata[thisname].length > 200) {
+                            historydata[thisname].splice(0, 1);
+                        }
+                    }
+                    else {
+                        historydata[thisname] = [nowdata[thisname]];
+                        if (!(thisname in namecolors)) {
+                            if (notusedcolors.length > 0) {
+                                let tarindex = Math.floor(Math.random() * notusedcolors.length);
+                                namecolors[thisname] = notusedcolors[tarindex];
+                                notusedcolors.splice(tarindex, 1);
+                            }
+                            else {
+                                let tarindex = Math.floor(Math.random() * usefulcolors.length);
+                                namecolors[thisname] = usefulcolors[tarindex];
+                            }
+                        }
+                    }
+                    draw_path(ctx, historydata[thisname], namecolors[thisname])
+                }
+                for (m in historydata) {
+                    if (jsoned['names'].indexOf(m) < 0) {
+                        delete historydata[m];
+                    }
+                }
+                oldlen = xhr.responseText.length;
+                if (oldlen > 1024 * 1024 * 128) {
+                    xhr.abort();
+                    ttt = true;
+                }
+            }
+        };
+        xhr.send(null);
+    }
+    function getCTX() {
+        let c=document.getElementById("canvas");
+        let ctx=c.getContext("2d");
+        
+        return ctx;
+    }
+    function draw_point(ctx, point) {
+        ctx.fillRect(point.x-5,point.y-5,10,10);
+    }
+    function draw_path(ctx, path, color='#0000FF'){
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.fillStyle=color;
+        for(var i = 0; i < path.length-1; i++){
+            draw_point(ctx, path[i])
+            draw_line(ctx, path[i], path[i+1]);
+        }
+        draw_point(ctx, path[path.length - 1]);
+    }
+    function draw_line(ctx,a,b){
+        ctx.lineWidth = 3;
+        ctx.moveTo(a.x,a.y);
+        ctx.lineTo(b.x,b.y);
+        ctx.stroke();
+    }
+
+    setInterval(function () {
+        if (ttt) {
+            ttt = false;
+            delete xhr;
+            xhr = null;
+            oldlen = 0;
+            f();
+        }
+    }, 20)
+</script>
+    <h1>监控：</h1>
+    <img src="/monitor/list" width="640" height="480"/>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <h2>警示记录：</h2>
+    <div style="height: 300px; width: 640px; overflow: scroll;">
+        <ul id="record"></ul>
+    </div>
+</body>
+</html>

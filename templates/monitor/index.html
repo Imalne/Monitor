@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<script>
+        function singleUpdate(){
+                $.ajax({
+                    type : "Post",
+                    {#async : false,  //同步请求#}
+                    url : "/monitor/newFrame/",
+                    timeout:5000,
+                    data :{csrfmiddlewaretoken:'{{ csrf_token }}'},
+                    success:function(dates){
+                        response = JSON.parse(dates);
+                        $("#ImagePic").attr("src", "data:image/jpg;base64,"+response["imagedata"]);
+                        num = response["facelist"].length;
+                        list = $(".faceDetected");
+                            for(let j = 0;j<list.length;j++){
+                                list[j].remove();}
+
+                        {#console.log(response["facelist"][0]);#}
+
+                        for (let i = 0; i < num; i++) {
+
+                            let oDiv=document.createElement('div');
+                            oDiv.className = "faceDetected";
+                            document.body.append(oDiv);
+                            let im = document.createElement('img');
+                            oDiv.appendChild(im);
+                            im.width=100;
+                            im.height=100;
+                            im.src = "data:image/jpg;base64,"+response["facelist"][i];
+                        }
+
+                        if(response["record"]!="") {
+                            console.log(response["record"]);
+                            document.getElementById('record').innerText=response["record"]
+                        }
+
+                    },
+                    error:function () {
+                        console.log("wrong");
+                    }
+                });
+            }
+        $(document).ready(function () {
+            setInterval(function(){singleUpdate()},150);
+        });
+    </script>
+
+<body style="margin-top: 20%">
+    <div id="mainContent">
+        <img id="ImagePic" alt="Base64 encoded image" width="640" height="480" />
+    </div>
+    <p id="record"></p>
+</body>
+</html>

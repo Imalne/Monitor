@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://www.gongjuji.net/Content/files/jquery.md5.js"></script>
+<script>
+    function adduser() {
+        $.ajax({
+            type: "Post",
+            url: "/monitor/adduser/",
+            data: {
+                csrfmiddlewaretoken:'{{ csrf_token }}',
+                username: $("#name").val(),
+                password: $.md5($("#password").val()),
+                email: $("#email").val(),
+            },
+            success: function (dates) {
+                    window.location.href="/monitor/super";
+            },
+            error: function (data) {
+                alert(data);
+            }
+        });
+    }
+</script>
+<body>
+<div>
+<form action="/monitor/adduser/" method="post">
+        name<input type="text" name="name" id="name">
+        password<input type="password" name="password" id="password">
+        email<input type="email" name="email" id="email">
+</form>
+    <button onclick="adduser()">提交</button>
+</div>
+<div>
+    <table>
+    <tr><th>名字</th><th>邮箱</th><th>是否激活</th></tr>
+        {% for user in userlist %}
+            <tr style="text-align: center">
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.isActive }}</td>
+            </tr>
+        {% endfor %}
+
+    </table>
+</div>
+</body>
+</html>

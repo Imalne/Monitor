@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SignUp</title>
+</head>
+<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://www.gongjuji.net/Content/files/jquery.md5.js"></script>
+<script>
+    function signup() {
+        $.ajax({
+            type: "Post",
+            {#async : false,  //同步请求#}
+            url: "",
+            data: {
+                csrfmiddlewaretoken:'{{ csrf_token }}',
+                username: $("#username").val(),
+                password: $.md5($("#password").val()),
+                email: $("#email").val(),
+            },
+            success: function (dates) {
+                if(dates == 'ok') {
+                    alert(dates)
+                    document.getElementById('vcode').disabled = false;
+                    resendEmail();
+                }
+                else {
+                    alert(dates);
+                }
+            },
+            error: function (data) {
+                alert(data);
+            }
+        });
+    }
+    function verify() {
+        $.ajax({
+            type: "Post",
+            {#async : false,  //同步请求#}
+            url: "",
+            data: {
+                csrfmiddlewaretoken:'{{ csrf_token }}',
+                username: $("#username").val(),
+                password: $("#password").val(),
+                email: $("#email").val(),
+                vcode: $("#vcode").val(),
+            },
+            success: function (dates) {
+                if(dates == "ok") {
+                    alert("注册成功!");
+                    console.log("验证成功");
+                    window.location.href='/monitor/userpage'
+                }
+                else{
+                    alert(dates);
+                }
+            },
+            error: function () {
+                alert("NetWork wrong");
+            }
+        });
+    }
+    function resendEmail() {
+        $.ajax({
+            type: "Post",
+            {#async : false,  //同步请求#}
+            url: "",
+            data: {
+                csrfmiddlewaretoken:'{{ csrf_token }}',
+                username: $("#username").val(),
+                password: $("#password").val(),
+                email: $("#email").val(),
+                resend:true,
+            },
+            success: function (dates) {
+                document.getElementById("verify").disabled = false;
+                document.getElementById("resend").disabled = true;
+
+                for(let i = 0;i<60;i++){
+                    setTimeout(function () {
+                        document.getElementById("resend").innerHTML = "重新发送("+(60-i).toString()+')';
+                    },i*1000);
+                }
+                setTimeout(function () {
+                    document.getElementById("resend").innerHTML = "重新发送";
+                    document.getElementById("resend").disabled = false;
+                },61*1000);
+            },
+            error: function () {
+                console.log("验证出错");
+            }
+        });
+    }
+</script>
+
+<body>
+<div>
+    <form action="" method="post">
+        {% csrf_token %}
+        username<input id="username"  value="whale" type="text" name="username">
+        passwword<input id="password" value="fall" type="password" name="password">
+        email<input id="email" type="email"  value="qrmose@163.com" name="email">
+        verifyCode<input disabled="true" id="vcode" type="text" name="vcode">
+    </form>
+    <button onclick="signup()" id="signup">signup</button>
+    <button onclick="verify()" id="verify" disabled="true">verify</button>
+    <button onclick="resendEmail()" id="resend" disabled="true">resend</button>
+<a href="/monitor/login">turn to Login</a>
+</div>
+</body>
+</html>

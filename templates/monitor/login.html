@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign In</title>
+</head>
+<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://www.gongjuji.net/Content/files/jquery.md5.js"></script>
+
+<script>
+    function login() {
+        $.ajax({
+            type: "Post",
+            url: "",
+            data: {
+                csrfmiddlewaretoken:'{{ csrf_token }}',
+                password: $.md5($("#password").val()),
+                email: $("#email").val(),
+            },
+            success: function (dates) {
+                if(dates == 'success'){
+                    window.location.href="/monitor/userpage";
+                }
+                alert(dates)
+            },
+            error: function (data) {
+                console.log("wrong");
+                alert(data);
+            }
+        });
+    }
+</script>
+<body>
+    <form action="" method="post">
+        email<input type="email" name="email" id="email">
+        password<input type="password" name="password" id="password">
+    </form>
+<button onclick="login()">login</button>
+<a href="/monitor/signup">turn to sign up</a>
+</body>
+</html>

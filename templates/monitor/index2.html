@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<script>
+    var ttt;
+    var oldlen = 0;
+    function f() {
+        xhr = new XMLHttpRequest();
+        xhr.multipart = true;
+        xhr.open('Post', "/monitor/recordInfo/");
+        let recordnode = document.getElementById('record');
+        let recordelement = '';
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 3) {
+                console.log(oldlen);
+                ans = xhr.responseText.substring(oldlen, );
+                recordelement = document.createElement('li');
+                recordelement.innerHTML = ans;
+                recordnode.insertBefore(recordelement, recordnode.childNodes[0]);
+                oldlen = xhr.responseText.length;
+                if (oldlen > 1024 * 1024 * 128) {
+                    xhr.abort();
+                    ttt = true;
+                }
+            }
+        };
+        xhr.send(null);
+    }
+
+    setInterval(function () {
+        if (ttt) {
+            ttt = false;
+            delete xhr;
+            xhr = null;
+            oldlen = 0;
+            f();
+            console.log("New!")
+        }
+    }, 20)
+</script>
+<body  style="margin-top: 10%" onload="f()">
+    <img src="/monitor/list" />
+    <h1>警示记录：</h1>
+    <div style="height: 300px; width: 500px; overflow: scroll;">
+        <ul id="record">
+
+        </ul>
+    </div>
+</body>
+
+</html>
